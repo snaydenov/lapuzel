@@ -8,21 +8,36 @@
     <link rel="stylesheet" href="/public/signin.css" />
   </head>
   <body>
-  <h2> Welcome to Lapuzel! </h2>
+  
   <div class="container">
-
+  
+  
       <form class="form-signin" role="form">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <input type="email" class="form-control" placeholder="Email address" required autofocus>
-        <input type="password" class="form-control" placeholder="Password" required>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" value="remember-me"> Remember me
-          </label>
-        </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-      </form>
+        <h2> Welcome to Lapuzel! </h2>
+        <div id="activities"></div>
+         <script>
+        function escaped(s) {
+          return $("<div></div>").html(s).html();
+        }
+        
+        var socket = io.connect('http://10.0.202.13:8081');
+        
+        socket.on('getPattern',function(data){
+          $('#activities').append('<b>'+ escaped(data) + "<br/>");
+        });
+        
+        socket.on('gameFinished',function(data){
+          $('#activities').append( '<b>Congratulations! You finished the game in ' + escaped(data) + "seconds </b> <br/>");
+        });
+        
+        socket.on('playerError',function(data){
+          $('#activities').append( '<b>Sorry, too bad... try again :</b> <br/>');
+        });
+        
+        
 
+        
+      </script>
     </div> <!-- /container -->
   </body>
 </html>
