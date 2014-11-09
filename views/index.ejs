@@ -1,9 +1,9 @@
 <html>
   <head>
     <title>Lapuzel 1.0</title>
+    <script src="/public/jquery-1.8.0.js"></script>
     <link rel="stylesheet" href="/public/bootstrap.css" />
     <script src="/public/bootstrap.js"></script>
-    <script src="/public/jquery-1.8.0.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/public/signin.css" />
   </head>
@@ -14,29 +14,67 @@
   
       <form class="form-signin" role="form">
         <h2> Welcome to Lapuzel! </h2>
-        <div id="activities"></div>
-         <script>
+        <h2 id="timer"></h2>
+        
+        <div id="activities" style='font-size:30px;'></div>
+        <div id="saveScore" class="save-name" >
+          <br/>
+          <label> Type in your name:</label>
+          <input id="userName" class="form-control" placeholder="Your name:" required autofocus>
+          <button class="btn btn-lg btn-primary btn-block" onclick="javascript:saveUser();">Done</button>
+        </div>
+        <div id="topScores" style="display:none;">
+          
+        </div>
+        <script>
         function escaped(s) {
           return $("<div></div>").html(s).html();
         }
         
         var socket = io.connect('http://10.0.202.13:8081');
         
-        socket.on('getPattern',function(data){
-          $('#activities').append('<b>'+ escaped(data) + "<br/>");
-        });
+        var count=0;
+        var counter;
+        var cardId;
+        var time;
         
+        socket.on('getPattern',function(data){
+          $('#activities').append('<b>'+ escaped(data.card_name) + "</b> <br/>");
+          cardId = data.card_name;
+          counter =setInterval(timer, 10);
+        });
+        socket.on('getTopScores',function(data){
+          alert(data);
+        });
         socket.on('gameFinished',function(data){
-          $('#activities').append( '<b>Congratulations! You finished the game in ' + escaped(data) + "seconds </b> <br/>");
+          time = data;
+          document.getElementById("timer").style.display = 'none';
+          document.getElementById("saveScore").style.display = 'block';
+          $('#activities').append( '<b>Congratulations! You finished the game in ' + escaped(data) + " seconds </b> <br/>");
+          clearInterval(counter);
+          
         });
         
         socket.on('playerError',function(data){
           $('#activities').append( '<b>Sorry, too bad... try again :</b> <br/>');
+          document.getElementById("timer").style.display = 'none';
+          clearInterval(counter);
+          
         });
         
-        
-
-        
+        function timer()
+        {
+          count=count + 0.01;
+          document.getElementById("timer").innerHTML=count.toFixed(2) + " secs";
+        } 
+        function saveUser()
+        {
+          var name = document.getElementById("userName").value;
+          if(!(0 === name.length))
+          {
+            socket.emit("saveUser",{userName : name, gameTime : time, card : cardId });
+          }
+        }
       </script>
     </div> <!-- /container -->
   </body>

@@ -35,10 +35,6 @@ app.get('/register.html', function (req, res) {
 
 io.sockets.on('connection', function (socket) {
   
-  socket.on('event', function(data) {
-        socket.send('hi');
-  });
-  
   socket.on('start', function(data) {
     socket.send('started');
   
@@ -53,5 +49,13 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('end', function(data) {
         worker.sockets.emit('gameFinished', data);
+        persistence.getAllGames(worker);
+
+  });
+});
+
+worker.sockets.on('connection', function(socket) {
+  socket.on('saveUser', function(data) {
+        persistence.insertGame(data.userName, data.gameTime, data.card);
   });
 });
